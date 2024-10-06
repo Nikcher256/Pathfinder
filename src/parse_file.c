@@ -1,4 +1,5 @@
-#include "../inc/libmx.h"
+#include "../inc/pathfinder.h"
+#include "../libmx/inc/libmx.h"
 
 void parse_file(const char *filename, Graph *graph) {
     char *content = NULL;
@@ -45,14 +46,14 @@ void parse_file(const char *filename, Graph *graph) {
         char island1[50], island2[50];
         long long length = mx_atoll(mx_strchr(line, ',') + 1);
 
-        if (length <= 0) {
+        if (length <= 0 || length > INT_MAX) {
             free(content_ptr);
             handle_line_error(" is not valid", lineN);
         }
 
         if (total_length > INT_MAX) {
             free(content_ptr);
-            handle_error("error: sum of bridge lengths is too big\n");
+            handle_error("error: sum of bridges lengths is too big\n");
         }
 
         total_length += length;
@@ -62,6 +63,10 @@ void parse_file(const char *filename, Graph *graph) {
         island1[dash - line] = '\0';
         mx_strncpy(island2, dash + 1, mx_strchr(line, ',') - dash - 1);
         island2[mx_strchr(line, ',') - dash - 1] = '\0';
+        if (mx_strcmp(island1, "\0") == 0 || mx_strcmp(island2, "\0") == 0) {
+            free(content_ptr);
+            handle_line_error(" is not valid", lineN);
+        }
 
         if (mx_strcmp(island1, island2) == 0) {
             free(content_ptr);
@@ -82,6 +87,7 @@ void parse_file(const char *filename, Graph *graph) {
         if (graph->distances[idx1][idx2] != INT_MAX) {
             is_duplicate = true;
         }
+        // mx_printf("idx1: %d; idx2: %d\n", mx_itoa(idx1), mx_itoa(idx2), NULL);
 
         graph->distances[idx1][idx2] = length;
         graph->distances[idx2][idx1] = length;

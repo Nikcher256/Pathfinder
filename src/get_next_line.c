@@ -1,4 +1,5 @@
-#include "../inc/libmx.h"
+#include "../inc/pathfinder.h"
+#include "../libmx/inc/libmx.h"
 
 int get_next_line(char **content, char **line) {
     if (!*content || !**content) return 0;

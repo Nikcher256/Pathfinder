@@ -1,4 +1,5 @@
-#include "../inc/libmx.h"
+#include "../inc/pathfinder.h"
+#include "../libmx/inc/libmx.h"
 
 int is_valid_bridge_line(const char *line) {
     char *dash = mx_strchr(line, '-');

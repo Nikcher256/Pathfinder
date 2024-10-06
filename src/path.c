@@ -1,39 +1,10 @@
-#include "../inc/libmx.h"
+#include "../inc/pathfinder.h"
+#include "../libmx/inc/libmx.h"
 
 typedef struct {
     char *route;
     char *distance;
 } Path;
-
-int min_distance(int dist[], bool visited[], int num_islands) {
-    int min = INT_MAX, min_index = -1;
-    for (int v = 0; v < num_islands; v++) {
-        if (!visited[v] && dist[v] < min) {
-            min = dist[v];
-            min_index = v;
-        }
-    }
-    return min_index;
-}
-
-int compare_paths(const Path *pathA, const Path *pathB) {
-    if (pathA->distance != pathB->distance) {
-        return mx_strcmp(pathA->distance, pathB->distance);
-    }
-    return mx_strcmp(pathA->route, pathB->route);
-}
-
-void bubble_sort_paths(Path *paths, int path_count) {
-    for (int i = 0; i < path_count - 1; i++) {
-        for (int j = 0; j < path_count - i - 1; j++) {
-            if (compare_paths(&paths[j], &paths[j + 1]) < 0) {
-                Path temp = paths[j];
-                paths[j] = paths[j + 1];
-                paths[j + 1] = temp;
-            }
-        }
-    }
-}
 
 void build_paths(Graph *graph, int parent[MAX_ISLANDS][MAX_ISLANDS], int stack[], int stack_size,
                  int to, int from, Path *paths, int *path_count) {
@@ -96,6 +67,30 @@ void print_path(const char *start_island, const char *end_island, const Path *pa
     mx_printstr("========================================\n");
 }
 
+int min_distance(int dist[], bool visited[], int num_islands) {
+    int min = INT_MAX, min_index = -1;
+    for (int v = 0; v < num_islands; v++) {
+        if (!visited[v] && dist[v] < min) {
+            min = dist[v];
+            min_index = v;
+        }
+    }
+    return min_index;
+}
+
+void sort_paths_by_u(Path paths[], int path_count, int parent[MAX_ISLANDS][MAX_ISLANDS], int to) {
+    for (int i = 0; i < path_count - 1; i++) {
+        for (int j = 0; j < path_count - i - 1; j++) {
+            if (parent[to][j] > parent[to][j + 1]) {
+                // Swap the paths
+                Path temp = paths[j];
+                paths[j] = paths[j + 1];
+                paths[j + 1] = temp;
+            }
+        }
+    }
+}
+
 void find_and_print(Graph *graph, int from, int to) {
     int num_islands = graph->num_islands;
     int dist[MAX_ISLANDS];
@@ -147,7 +142,7 @@ void find_and_print(Graph *graph, int from, int to) {
     int stack[MAX_ISLANDS];
     build_paths(graph, parent, stack, 0, to, from, paths, &path_count);
 
-    bubble_sort_paths(paths, path_count);
+    sort_paths_by_u(paths, path_count, parent, to);
 
     for (int i = 0; i < path_count; i++) {
         print_path(graph->island_names[from], graph->island_names[to], &paths[i]);

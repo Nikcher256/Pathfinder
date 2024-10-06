@@ -1,9 +1,5 @@
-#include <fcntl.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-
-#include "../inc/libmx.h"
+#include "../inc/pathfinder.h"
+#include "../libmx/inc/libmx.h"
 
 int main(int argc, char *argv[]) {
     if (argc != 2) {

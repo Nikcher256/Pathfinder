@@ -1,4 +1,5 @@
-#include "../inc/libmx.h"
+#include "../inc/pathfinder.h"
+#include "../libmx/inc/libmx.h"
 
 int read_file(const char *filename, char **content) {
     int fd = open(filename, O_RDONLY);

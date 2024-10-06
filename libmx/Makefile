@@ -4,23 +4,16 @@ CFLAGS = -std=c11 -Wall -Wextra -Werror -Wpedantic
 OBJDIR = ./obj
 SRCDIR = ./src
 HEADERFILES = ./inc
-LIBRARYDIR = ./libmx
 
 SRCFILES := $(wildcard $(SRCDIR)/*.c)
 OBJFILES := $(patsubst $(SRCDIR)/%.c, $(OBJDIR)/%.o, $(SRCFILES))
 
-BINARY = pathfinder
-LIBRARY = libmx/libmx.a
+MINILIBMX = libmx.a
 
-.PHONY: all clean uninstall reinstall $(LIBRARY)
+all: $(MINILIBMX)
 
-all: $(BINARY)
-
-$(BINARY): $(LIBRARY) $(OBJFILES)
-	${CC} ${CFLAGS} ${OBJFILES} -o ${BINARY} $(LIBRARY)
-
-$(LIBRARY):
-	cd $(LIBRARYDIR) && make
+$(MINILIBMX): $(OBJFILES)
+	ar rcs $@ $^
 
 $(OBJFILES): | $(OBJDIR)
 
@@ -31,11 +24,9 @@ $(OBJDIR):
 	mkdir -p $@
 
 uninstall: clean
-	cd $(LIBRARYDIR) && make uninstall
-	rm -f $(BINARY)
+	rm -f $(MINILIBMX)
 
 clean:
-	cd $(LIBRARYDIR) && make clean
 	rm -r -f $(OBJDIR)
 
 reinstall: uninstall all
