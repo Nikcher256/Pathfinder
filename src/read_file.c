@@ -1,9 +1,10 @@
 #include "../inc/pathfinder.h"
 #include "../libmx/inc/libmx.h"
 
-int read_file(const char *filename, char **content) {
+int read_file(const char *filename, char **content, Graph *graph) {
     int fd = open(filename, O_RDONLY);
     if (fd < 0) {
+        free_graph(graph, 0);
         handle_file_error(" does not exist", filename);
     }
 

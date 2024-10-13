@@ -3,10 +3,12 @@
 
 void parse_file(const char *filename, Graph *graph) {
     char *content = NULL;
-    int file_size = read_file(filename, &content);
+    int file_size = read_file(filename, &content, graph);
     char *content_ptr = content;
 
     if (file_size == 0) {
+        free(content_ptr);
+        free_graph(graph, 0);
         handle_file_error(" is empty", filename);
     }
 
@@ -15,16 +17,19 @@ void parse_file(const char *filename, Graph *graph) {
     if (get_next_line(&content, &line) && line) {
         if (!is_digit_string(line)) {
             free(content_ptr);
+            free_graph(graph, 0);
             handle_error("error: line 1 is not valid\n");
         }
 
         graph->num_islands = mx_atoi(line);
         if (graph->num_islands <= 0 || graph->num_islands > MAX_ISLANDS) {
             free(content_ptr);
+            free_graph(graph, 0);
             handle_error("error: line 1 is not valid\n");
         }
     } else {
         free(content_ptr);
+        free_graph(graph, 0);
         handle_error("error: line 1 is not valid\n");
     }
 
@@ -40,6 +45,7 @@ void parse_file(const char *filename, Graph *graph) {
     while (get_next_line(&content, &line) && line) {
         if (!is_valid_bridge_line(line)) {
             free(content_ptr);
+            free_graph(graph, pos);
             handle_line_error(" is not valid", lineN);
         }
 
@@ -48,11 +54,13 @@ void parse_file(const char *filename, Graph *graph) {
 
         if (length <= 0 || length > INT_MAX) {
             free(content_ptr);
+            free_graph(graph, pos);
             handle_line_error(" is not valid", lineN);
         }
 
         if (total_length > INT_MAX) {
             free(content_ptr);
+            free_graph(graph, pos);
             handle_error("error: sum of bridges lengths is too big\n");
         }
 
@@ -65,11 +73,13 @@ void parse_file(const char *filename, Graph *graph) {
         island2[mx_strchr(line, ',') - dash - 1] = '\0';
         if (mx_strcmp(island1, "\0") == 0 || mx_strcmp(island2, "\0") == 0) {
             free(content_ptr);
+            free_graph(graph, pos);
             handle_line_error(" is not valid", lineN);
         }
 
         if (mx_strcmp(island1, island2) == 0) {
             free(content_ptr);
+            free_graph(graph, pos);
             handle_line_error(" is not valid", lineN);
         }
         lineN++;
@@ -95,9 +105,11 @@ void parse_file(const char *filename, Graph *graph) {
 
     if (pos != graph->num_islands) {
         free(content_ptr);
+        free_graph(graph, pos);
         handle_error("error: invalid number of islands\n");
     } else if (is_duplicate) {
         free(content_ptr);
+        free_graph(graph, pos);
         handle_error("error: duplicate bridges\n");
     }
     free(content_ptr);

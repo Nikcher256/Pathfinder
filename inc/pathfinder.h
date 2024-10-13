@@ -20,11 +20,12 @@ typedef struct {
 } Graph;
 
 void handle_error(const char *message);
+void free_graph(Graph *graph, int islands);
 void handle_line_error(const char *message, int line);
 int is_valid_bridge_line(const char *line);
 void handle_file_error(const char *message, const char *filename);
 void parse_file(const char *filename, Graph *graph);
-int read_file(const char *filename, char **content);
+int read_file(const char *filename, char **content, Graph *graph);
 int get_next_line(char **content, char **line);
 bool add_island(Graph *graph, const char *island, int pos);
 int find_island_index(Graph *graph, const char *island);
