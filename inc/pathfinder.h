@@ -19,6 +19,13 @@ typedef struct {
     int distances[MAX_ISLANDS][MAX_ISLANDS];
 } Graph;
 
+typedef struct {
+    char *route;
+    char *distance;
+} Path;
+
+void build_paths(Graph *graph, int parent[MAX_ISLANDS][MAX_ISLANDS], int stack[], int stack_size,
+                 int to, int from, Path *paths, int *path_count);
 void handle_error(const char *message);
 void free_graph(Graph *graph, int islands);
 void handle_line_error(const char *message, int line);

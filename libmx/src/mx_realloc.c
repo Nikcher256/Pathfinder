@@ -1,4 +1,4 @@
-#include <malloc.h>  // For malloc_usable_size on Linux different on Mac
+#include <malloc/malloc.h>  // For malloc_usable_size on Linux different on Mac
 
 #include "../inc/libmx.h"
 
@@ -12,7 +12,7 @@ void *mx_realloc(void *ptr, size_t size) {
         return malloc(size);
     }
 
-    size_t old_size = malloc_usable_size(ptr);
+    size_t old_size = malloc_size(ptr);
 
     // Allocate new memory block
     void *new_ptr = malloc(size);

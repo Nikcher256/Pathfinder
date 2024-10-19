@@ -1,64 +1,6 @@
 #include "../inc/pathfinder.h"
 #include "../libmx/inc/libmx.h"
 
-typedef struct {
-    char *route;
-    char *distance;
-} Path;
-
-void build_paths(Graph *graph, int parent[MAX_ISLANDS][MAX_ISLANDS], int stack[], int stack_size,
-                 int to, int from, Path *paths, int *path_count) {
-    stack[stack_size++] = to;
-
-    if (to == from) {
-        char route[MAX_ISLANDS * 10] = "";
-        char distance_str[100] = "";
-        int total_distance = 0;
-
-        for (int i = stack_size - 1; i >= 0; i--) {
-            mx_strcat(route, graph->island_names[stack[i]]);
-            if (i != 0) {
-                mx_strcat(route, " -> ");
-            }
-        }
-
-        bool equel = false;
-
-        for (int i = stack_size - 1; i > 0; i--) {
-            int segment_distance = graph->distances[stack[i]][stack[i - 1]];
-            total_distance += segment_distance;
-
-            char *segment_str = mx_itoa(segment_distance);
-
-            if (i < stack_size - 1) {
-                equel = true;
-                mx_strcat(distance_str, " + ");
-                mx_strcat(distance_str, segment_str);
-            } else {
-                mx_strcpy(distance_str, segment_str);
-            }
-            free(segment_str);
-        }
-
-        if (equel) {
-            char *total_distance_str = mx_itoa(total_distance);
-            mx_strcat(distance_str, " = ");
-            mx_strcat(distance_str, total_distance_str);
-            free(total_distance_str);
-        }
-
-        paths[*path_count].route = mx_strdup(route);
-        paths[*path_count].distance = mx_strdup(distance_str);
-        (*path_count)++;
-
-        return;
-    }
-
-    for (int i = 0; parent[to][i] != -1; i++) {
-        build_paths(graph, parent, stack, stack_size, parent[to][i], from, paths, path_count);
-    }
-}
-
 void print_path(const char *start_island, const char *end_island, const Path *path) {
     mx_printstr("========================================\n");
     mx_printf("Path: %s -> %s\n", start_island, end_island, NULL);
@@ -78,15 +20,66 @@ int min_distance(int dist[], bool visited[], int num_islands) {
     return min_index;
 }
 
-void sort_paths_by_u(Path paths[], int path_count, int parent[MAX_ISLANDS][MAX_ISLANDS], int to) {
+int get_island_priority(const char *island_name, char *island_names[], int num_islands) {
+    for (int i = 0; i < num_islands; i++) {
+        if (mx_strcmp(island_name, island_names[i]) == 0) {
+            return i;  // Return the index as priority
+        }
+    }
+    return INT_MAX;  // Return max value if not found
+}
+
+// Sort paths based on the priority of the first island in the path
+void sort_paths_by_priority(Path paths[], int path_count, char *island_names[], int num_islands) {
     for (int i = 0; i < path_count - 1; i++) {
         for (int j = 0; j < path_count - i - 1; j++) {
-            if (parent[to][j] > parent[to][j + 1]) {
-                // Swap the paths
-                Path temp = paths[j];
-                paths[j] = paths[j + 1];
-                paths[j + 1] = temp;
+            // Create copies of the route strings for tokenization
+            char *route_copy1 = mx_strdup(paths[j].route);
+            char *route_copy2 = mx_strdup(paths[j + 1].route);
+
+            // Tokenize the route copies
+            char *tokens1[100];  // Array to hold the islands
+            char *tokens2[100];  // Array to hold the islands
+            int count1 = 0, count2 = 0;
+            // mx_printf("%s\n%s\n", paths[j].route, paths[j + 1].route, NULL);
+            // Split the first route into islands
+            char *token1 = mx_strtok(route_copy1, " -> ");
+            while (token1 != NULL) {
+                tokens1[count1++] = token1;
+                token1 = mx_strtok(NULL, " -> ");
             }
+
+            // Split the second route into islands
+            char *token2 = mx_strtok(route_copy2, " -> ");
+            while (token2 != NULL) {
+                tokens2[count2++] = token2;
+                token2 = mx_strtok(NULL, " -> ");
+            }
+
+            // Compare islands in the path except the first and last
+            for (int k = 1; k < count1 && k < count2; k++) {  // Skip first and last
+                // Get priorities
+                int priority1 = get_island_priority(tokens1[k], island_names, num_islands);
+                int priority2 = get_island_priority(tokens2[k], island_names, num_islands);
+
+                // mx_printf("Compare %s and %s with priority: ", tokens1[k], tokens2[k], NULL);
+                // mx_printf("%d and %d\n", mx_itoa(priority1), mx_itoa(priority2), NULL);
+
+                if (priority1 > priority2) {  // Sort in ascending order
+                    // Swap the paths
+                    // mx_printstr("swap\n");
+                    Path temp = paths[j];
+                    paths[j] = paths[j + 1];
+                    paths[j + 1] = temp;
+                    break;  // Break to re-evaluate paths
+                } else if (priority1 < priority2) {
+                    break;
+                }
+            }
+
+            // Free the allocated memory for the copied routes
+            free(route_copy1);
+            free(route_copy2);
         }
     }
 }
@@ -142,7 +135,7 @@ void find_and_print(Graph *graph, int from, int to) {
     int stack[MAX_ISLANDS];
     build_paths(graph, parent, stack, 0, to, from, paths, &path_count);
 
-    sort_paths_by_u(paths, path_count, parent, to);
+    sort_paths_by_priority(paths, path_count, graph->island_names, graph->num_islands);
 
     for (int i = 0; i < path_count; i++) {
         print_path(graph->island_names[from], graph->island_names[to], &paths[i]);

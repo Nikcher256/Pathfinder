@@ -97,7 +97,6 @@ void parse_file(const char *filename, Graph *graph) {
         if (graph->distances[idx1][idx2] != INT_MAX) {
             is_duplicate = true;
         }
-        // mx_printf("idx1: %d; idx2: %d\n", mx_itoa(idx1), mx_itoa(idx2), NULL);
 
         graph->distances[idx1][idx2] = length;
         graph->distances[idx2][idx1] = length;

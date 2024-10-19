@@ -26,7 +26,9 @@ t_list *mx_sort_list(t_list *lst, bool (*cmp)(void *, void *));
 
 void mx_printchar(char c);
 void mx_print_unicode(wchar_t c);
+char *mx_strtok(char *str, const char *delim);
 void mx_printstr(const char *s);
+int mx_isalpha(char c);
 void mx_print_strarr(char **arr, const char *delim);
 void mx_printint(int n);
 double mx_pow(double n, unsigned int pow);
